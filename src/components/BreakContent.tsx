@@ -2,11 +2,12 @@ import React, { useEffect, useState } from "react";
 
 interface BreakContentProps {
   onDone: () => void;
+  soundEnabled: boolean;
 }
 
 type BreakType = "miniGame" | "wellness" | "fact" | "quote" | "justTimer" | null;
 
-export default function BreakContent({ onDone }: BreakContentProps) {
+export default function BreakContent({ onDone, soundEnabled }: BreakContentProps) {
   // const breakDuration = 5 * 60; // 5 minutes in seconds
   const breakDuration = 5 ; // 5 seconds for testing
   const [timeLeft, setTimeLeft] = useState(breakDuration);
@@ -15,39 +16,39 @@ export default function BreakContent({ onDone }: BreakContentProps) {
 
   // Play reminder sound every 20 seconds if no break type is selected
   useEffect(() => {
-    if (!breakType) {
+    if (!breakType && soundEnabled) {
       const reminderInterval = setInterval(() => {
         const reminderAudio = new Audio("/sounds/message.mp3");
         reminderAudio.play();
       }, 20000); // 20 seconds
       return () => clearInterval(reminderInterval);
     }
-  }, [breakType]);
+  }, [breakType, soundEnabled]);
 
-  // Countdown timer: only start when a break type is chosen
-  useEffect(() => {
-    // Optionally play a sound at the start of the break:
-    // const startAudio = new Audio("/sounds/break-start.mp3");
-    // startAudio.play();
+   // Start the countdown when a break type is chosen
+   useEffect(() => {
     if (breakType) {
       const interval = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            // Play break end sound
-            const audioEnd = new Audio("/sounds/message.mp3");
-            audioEnd.play();
-            onDone();
-            return 0;
-          }
-          return prev - 1;
-        });
+        setTimeLeft((prev) => Math.max(prev - 1, 0));
       }, 1000);
       return () => clearInterval(interval);
     }
-  }, [breakType, onDone]);
+  }, [breakType]);
 
-  // Function to select a random message based on the break type
+    // When time reaches 0, play the break end sound (if enabled) and trigger onDone
+    useEffect(() => {
+      if (breakType && timeLeft === 0) {
+        if (soundEnabled) {
+          const audioEnd = new Audio("/sounds/message.mp3");
+          audioEnd.play();
+        }
+        // Delay calling onDone until after the render
+        setTimeout(() => {
+          onDone();
+        }, 0);
+      }
+    }, [timeLeft, breakType, onDone, soundEnabled]);
+
   const pickRandomItem = (type: BreakType) => {
     if (type === "miniGame") {
       return "Mini Game: [Game Placeholder]";
@@ -71,7 +72,7 @@ export default function BreakContent({ onDone }: BreakContentProps) {
       ];
       return items[Math.floor(Math.random() * items.length)];
     } else if (type === "justTimer") {
-      return ""; // No additional message
+      return ""; 
     }
     return "";
   };

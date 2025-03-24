@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 
 interface TimerProps {
   onBreak: () => void;
+  soundEnabled: boolean;
 }
 
 // const WORK_TIME = 25 * 60; // 25 minutes in seconds
 const WORK_TIME = 10; // 10 seconds for testing
 
-export default function Timer({ onBreak }: TimerProps) {
+export default function Timer({ onBreak, soundEnabled }: TimerProps) {
   const [time, setTime] = useState(WORK_TIME);
   const [running, setRunning] = useState(false);
 
@@ -16,13 +17,15 @@ export default function Timer({ onBreak }: TimerProps) {
     if (running && time > 0) {
       timer = setInterval(() => setTime((t) => t - 1), 1000);
     } else if (time === 0) {
-      // Play break start sound when timer ends
-      const audio = new Audio("/sounds/sweetalert.wav");
-      audio.play();
+      if (soundEnabled) {
+       // Play break start sound when timer ends
+        const audio = new Audio("/sounds/sweetalert.wav");
+        audio.play();
+      }
       onBreak();
     }
     return () => clearInterval(timer);
-  }, [running, time, onBreak]);
+  }, [running, time, onBreak, soundEnabled]);
 
   const formatTime = (seconds: number) =>
     `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
@@ -34,8 +37,10 @@ export default function Timer({ onBreak }: TimerProps) {
 
   // Force a break immediately
   const forceBreak = () => {
-    const audio = new Audio("/sounds/sweetalert.wav");
-    audio.play();
+    if (soundEnabled) {
+      const audio = new Audio("/sounds/sweetalert.wav");
+      audio.play();
+    }
     onBreak();
   };
 
