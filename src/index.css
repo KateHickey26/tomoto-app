@@ -1,7 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@keyframes flash {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+}
 
 body {
     @apply font-sans;
+  }
+  .flash {
+    animation: flash 0.5s ease-in-out;
   }

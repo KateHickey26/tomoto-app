@@ -1,4 +1,8 @@
 import React, { useEffect, useState } from "react";
+import { miniGames } from "../data/miniGames.ts";
+import { wellnessMessages } from "../data/wellnessMessages.ts";
+import { facts } from "../data/facts.ts";
+import { quotes } from "../data/quotes.ts";
 
 interface BreakContentProps {
   onDone: () => void;
@@ -8,11 +12,13 @@ interface BreakContentProps {
 type BreakType = "miniGame" | "wellness" | "fact" | "quote" | "justTimer" | null;
 
 export default function BreakContent({ onDone, soundEnabled }: BreakContentProps) {
-  // const breakDuration = 5 * 60; // 5 minutes in seconds
-  const breakDuration = 5 ; // 5 seconds for testing
+  const breakDuration = 5 * 60; // 5 minutes in seconds
+  // const breakDuration = 5 ; // 5 seconds for testing
   const [timeLeft, setTimeLeft] = useState(breakDuration);
   const [breakType, setBreakType] = useState<BreakType>(null);
   const [item, setItem] = useState("");
+  const [selectedMiniGame, setSelectedMiniGame] = useState<React.FC | null>(null);
+
 
   // Play reminder sound every 20 seconds if no break type is selected
   useEffect(() => {
@@ -49,33 +55,31 @@ export default function BreakContent({ onDone, soundEnabled }: BreakContentProps
       }
     }, [timeLeft, breakType, onDone, soundEnabled]);
 
-  const pickRandomItem = (type: BreakType) => {
-    if (type === "miniGame") {
-      return "Mini Game: [Game Placeholder]";
-    } else if (type === "wellness") {
-      const items = [
-        "Wellness: Stretch your arms!",
-        "Wellness: Take deep breaths!",
-        "Wellness: Stand up and move around!",
-      ];
-      return items[Math.floor(Math.random() * items.length)];
-    } else if (type === "fact") {
-      const items = [
-        "Fun Fact: Honey never spoils.",
-        "Fun Fact: Bananas are berries.",
-      ];
-      return items[Math.floor(Math.random() * items.length)];
-    } else if (type === "quote") {
-      const items = [
-        "Quote: “You miss 100% of the shots you don't take.” – Wayne Gretzky",
-        "Quote: “The best time to start was yesterday. The next best time is now.”",
-      ];
-      return items[Math.floor(Math.random() * items.length)];
-    } else if (type === "justTimer") {
-      return ""; 
-    }
-    return "";
-  };
+
+    // For non-minigame types, pick a random message
+    const pickRandomItem = (type: BreakType) => {
+      if (type === "wellness") {
+        return wellnessMessages[Math.floor(Math.random() * wellnessMessages.length)];
+      } else if (type === "fact") {
+        return facts[Math.floor(Math.random() * facts.length)];
+      } else if (type === "quote") {
+        return quotes[Math.floor(Math.random() * quotes.length)];
+      } else if (type === "miniGame") {
+        // In pickRandomItem or a separate effect:
+        const randomIndex = Math.floor(Math.random() * miniGames.length);
+        setSelectedMiniGame(() => miniGames[randomIndex].component);
+      } else if (type === "justTimer") {
+        return "";
+      }
+      return "";
+    };
+
+      // Handler for "Next" to fetch another random message
+    const handleNext = () => {
+      if (breakType && breakType !== "justTimer") {
+        setItem(pickRandomItem(breakType));
+      }
+    };
 
   // Initialize the break content when a type is selected
   useEffect(() => {
@@ -84,12 +88,6 @@ export default function BreakContent({ onDone, soundEnabled }: BreakContentProps
     }
   }, [breakType, item]);
 
-  // Handler for "Next" to fetch another random message
-  const handleNext = () => {
-    if (breakType && breakType !== "justTimer") {
-      setItem(pickRandomItem(breakType));
-    }
-  };
 
   // If no break type is chosen, show the selection menu
   if (!breakType) {
@@ -139,11 +137,16 @@ export default function BreakContent({ onDone, soundEnabled }: BreakContentProps
       <div className="text-xl font-semibold mb-4">
         Tomoto says it's break time 🧘‍♀️
       </div>
-      {/* Only show the activity message if break type isn't "justTimer" */}
-      {breakType !== "justTimer" && (
-        <div className="bg-white shadow p-4 rounded max-w-md mx-auto mb-4">
-          {item}
+      {breakType === "miniGame" && selectedMiniGame ? (
+        <div className="mb-4">
+          {React.createElement(selectedMiniGame)}
         </div>
+      ) : (
+        breakType !== "justTimer" && (
+          <div className="bg-white shadow p-4 rounded max-w-md mx-auto mb-4">
+            {item}
+          </div>
+        )
       )}
       <div className="mb-4">
         <span className="text-sm text-gray-500">

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Header from "./components/Header.tsx";
 import Timer from "./components/Timer.tsx";
 import BreakContent from "./components/BreakContent.tsx";
+import ClickTheCircle from "./components/ClickTheCircle.tsx";
 
 function App() {
   const [isBreak, setIsBreak] = useState(false);
@@ -17,6 +18,8 @@ function App() {
           <Timer onBreak={() => setIsBreak(true)} soundEnabled={soundEnabled} />
         )}
       </main>
+
+      {/* TESTING  */}
       <button
         onClick={() => {
         const testAudio = new Audio("/sounds/message.mp3");
@@ -25,6 +28,9 @@ function App() {
       >
       Test Sound
       </button>
+      <div className="min-h-screen flex items-center justify-center">
+      <ClickTheCircle />
+    </div>
     </div>
   );
 }
