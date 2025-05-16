@@ -12,7 +12,7 @@ interface BreakContentProps {
 type BreakType = "miniGame" | "wellness" | "fact" | "quote" | "justTimer" | null;
 
 export default function BreakContent({ onDone, soundEnabled }: BreakContentProps) {
-  const breakDuration = 5 * 60; // 5 minutes in seconds
+  const breakDuration = 5 * 2; // 5 minutes in seconds
   // const breakDuration = 5 ; // 5 seconds for testing
   const [timeLeft, setTimeLeft] = useState(breakDuration);
   const [breakType, setBreakType] = useState<BreakType>(null);
